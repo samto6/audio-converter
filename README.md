@@ -2,6 +2,8 @@
 
 A simple desktop application for converting audio files between different formats. Built with Python and Tkinter.
 
+![audio_converter](https://github.com/user-attachments/assets/b57da3c9-a587-4127-8130-1f7ccb52684e)
+
 ## Features
 
 - Convert audio files between MP3, FLAC, WAV, AAC (using QAAC for encoding), and OGG formats
