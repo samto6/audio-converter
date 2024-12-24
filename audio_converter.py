@@ -2,8 +2,18 @@ import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
 from tkinterdnd2 import DND_FILES, TkinterDnD
 from pydub import AudioSegment
+import sys
 import os
 import subprocess
+
+def resource_path(relative_path):
+    """ Get absolute path to resource, works for dev and for PyInstaller """
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+    return os.path.join(base_path, relative_path)
 
 class AudioConverterGUI:
     def __init__(self, root):
@@ -170,11 +180,12 @@ class AudioConverterGUI:
             if output_format == "aac":
                 # Use QAAC for AAC encoding
                 ffmpeg_cmd = [
-                    "ffmpeg", "-i", self.input_file,
+                    resource_path(os.path.join("bin", "ffmpeg", "ffmpeg.exe")),
+                    "-i", self.input_file,
                     "-f", "wav", "-bitexact", "-"
                 ]
                 
-                qaac_path = os.path.join(os.path.dirname(__file__), "qaac", "qaac64.exe")
+                qaac_path = resource_path(os.path.join("bin", "qaac", "qaac64.exe"))
                 qaac_cmd = [
                     qaac_path,
                     "-v", self.aac_bitrate.get(),
