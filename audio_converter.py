@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
+from tkinterdnd2 import DND_FILES, TkinterDnD
 from pydub import AudioSegment
 import os
 import subprocess
@@ -20,12 +21,16 @@ class AudioConverterGUI:
         self.flac_compression = tk.StringVar(value="5")
         self.ogg_quality = tk.StringVar(value="5")
         self.aac_bitrate = tk.StringVar(value="128")
+
+        # Drag and drop bindings
+        self.root.drop_target_register(DND_FILES)
+        self.root.dnd_bind('<<Drop>>', self.handle_drop)
         
         self.create_widgets()
         
     def create_widgets(self):
         # File selection
-        input_frame = ttk.LabelFrame(self.root, text="Input File", padding=10)
+        input_frame = ttk.LabelFrame(self.root, text="Please select or drag a file:", padding=10)
         input_frame.pack(fill="x", padx=10, pady=5)
         
         self.file_label = ttk.Label(input_frame, text="No file selected")
@@ -90,9 +95,23 @@ class AudioConverterGUI:
         convert_btn = ttk.Button(self.root, text="Convert", command=self.convert_audio)
         convert_btn.pack(pady=20)
         
-        # Progress bar
-        self.progress = ttk.Progressbar(self.root, length=400, mode='determinate')
-        self.progress.pack(pady=10)
+        # Text label
+        self.status_label = ttk.Label(self.root, text="")
+        self.status_label.pack(pady=10)
+
+    def handle_drop(self, event):
+        file_path = event.data
+        # Remove curly braces if present (Windows)
+        if file_path.startswith("{") and file_path.endswith("}"):
+            file_path = file_path[1:-1]
+        
+        # Check if the file is a valid audio file
+        valid_extensions = ('.mp3', '.m4a', '.flac', '.wav', '.aac', '.ogg')
+        if file_path.lower().endswith(valid_extensions):
+            self.input_file = file_path
+            self.file_label.config(text=os.path.basename(file_path))
+        else:
+            messagebox.showerror("Error", "Please drop a valid audio file")
         
     def update_options(self):
         # Hide all option frames
@@ -145,7 +164,7 @@ class AudioConverterGUI:
             if not output_file:
                 return
                 
-            self.progress["value"] = 0
+            self.status_label.config(text="Converting...")
             self.root.update_idletasks()
             
             if output_format == "aac":
@@ -229,7 +248,7 @@ class AudioConverterGUI:
                 # Export the file
                 audio.export(output_file, format=output_format, parameters=params)
             
-            self.progress["value"] = 100
+            self.status_label.config(text="")
             self.root.update_idletasks()
             
             messagebox.showinfo("Success", "Conversion completed successfully!")
@@ -238,6 +257,6 @@ class AudioConverterGUI:
             messagebox.showerror("Error", f"An error occurred: {str(e)}")
 
 if __name__ == "__main__":
-    root = tk.Tk()
+    root = TkinterDnD.Tk()
     app = AudioConverterGUI(root)
     root.mainloop()
